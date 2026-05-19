@@ -1,0 +1,63 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+}
+
+html.dark {
+  color-scheme: dark;
+}
+
+@layer base {
+  body {
+    @apply min-h-screen antialiased bg-slate-50 text-slate-900 font-sans;
+  }
+
+  html.dark body {
+    @apply bg-[#0b0e14] text-slate-50;
+  }
+}
+
+@layer components {
+  .grid-bg {
+    background-color: #f9fafb;
+    background-image:
+      linear-gradient(to right, rgb(229 231 235 / 0.55) 1px, transparent 1px),
+      linear-gradient(to bottom, rgb(229 231 235 / 0.55) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+
+  html.dark .grid-bg {
+    background-color: #0b0e14;
+    background-image:
+      linear-gradient(to right, rgb(30 41 59 / 0.45) 1px, transparent 1px),
+      linear-gradient(to bottom, rgb(30 41 59 / 0.45) 1px, transparent 1px);
+  }
+
+  .glass {
+    background: rgb(255 255 255 / 0.72);
+    backdrop-filter: blur(12px);
+  }
+
+  html.dark .glass {
+    background: rgb(15 23 42 / 0.55);
+  }
+
+  .btn-gradient {
+    background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+  }
+
+  .card-shadow {
+    box-shadow:
+      0 1px 2px rgb(15 23 42 / 0.04),
+      0 8px 24px rgb(15 23 42 / 0.06);
+  }
+
+  html.dark .card-shadow {
+    box-shadow:
+      0 1px 2px rgb(0 0 0 / 0.35),
+      0 12px 32px rgb(0 0 0 / 0.45);
+  }
+}
