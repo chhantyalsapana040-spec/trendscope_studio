@@ -5,6 +5,17 @@ import type { Database } from "@/types/database.types";
 const protectedPrefixes = ["/dashboard", "/compare", "/watchlist", "/reports", "/settings"];
 
 export async function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+
+  const needsAuth = protectedPrefixes.some(
+    (p) => pathname === p || pathname.startsWith(`${p}/`)
+  );
+
+  // Do not call Supabase on public routes
+  if (!needsAuth) {
+    return NextResponse.next();
+  }
+
   let supabaseResponse = NextResponse.next({ request });
 
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -20,24 +31,27 @@ export async function middleware(request: NextRequest) {
         return request.cookies.getAll();
       },
       setAll(cookiesToSet) {
-        cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
+        cookiesToSet.forEach(({ name, value }) => {
+          request.cookies.set(name, value);
+        });
+
         supabaseResponse = NextResponse.next({ request });
-        cookiesToSet.forEach(({ name, value, options }) =>
-          supabaseResponse.cookies.set(name, value, options)
-        );
+
+        cookiesToSet.forEach(({ name, value, options }) => {
+          supabaseResponse.cookies.set(name, value, options);
+        });
       },
     },
   });
 
   const {
     data: { user },
+    error,
   } = await supabase.auth.getUser();
 
-  const { pathname } = request.nextUrl;
-  const needsAuth = protectedPrefixes.some((p) => pathname === p || pathname.startsWith(`${p}/`));
-
-  if (needsAuth && !user) {
-    const login = new URL("/login", request.url);
+  if (!user || error) {
+    const login = request.nextUrl.clone();
+    login.pathname = "/login";
     login.searchParams.set("redirect", pathname);
     return NextResponse.redirect(login);
   }
@@ -46,7 +60,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
-  ],
+  matcher: ["/dashboard/:path*", "/compare/:path*", "/watchlist/:path*", "/reports/:path*", "/settings/:path*"],
 };
